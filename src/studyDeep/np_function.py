@@ -25,9 +25,23 @@ import numpy as np
 # print(z)
 # max = np.argmax(a
 
-a = np.arange(5).reshape(5, 1)
-b = np.arange(5)
-print(a + b)
+# a = np.arange(5).reshape(5, 1)
+# b = np.arange(5)
+# print(a + b)
 
 x = np.vstack([range(9)[i:i + 4] for i in range(6)])
+print('='*10,'x')
 print(x)
+print('='*10,'y')
+y = np.arange(6)[:, np.newaxis]
+print(y)
+print('='*10, 'z')
+z = np.arange(4)
+print(z)
+print('*'*10, 'x + y')
+print(x + y)
+print('*'*10, 'x + z')
+print(x + z)
+
+
+
