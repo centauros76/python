@@ -1,5 +1,8 @@
 import numpy as np
 import scipy.special
+import matplotlib.pyplot
+import time
+import datetime
 
 
 class neuralNetwork:
@@ -23,6 +26,7 @@ class neuralNetwork:
         pass
 
     def train(self, inputs_list, targets_list):
+
         inputs = np.array(inputs_list, ndmin=2).T
         targets = np.array(targets_list, ndmin=2).T
 
@@ -33,7 +37,7 @@ class neuralNetwork:
         final_outputs = self.activation_function(final_inputs)
 
         output_errors = targets - final_outputs
-        hidden_errors = np.dot(self.who, output_errors)
+        hidden_errors = np.dot(self.who.T, output_errors)
 
         self.who += self.lr * np.dot((output_errors * final_outputs * (1.0 - final_outputs)), np.transpose(hidden_outputs))
         self.win += self.lr * np.dot((hidden_errors * hidden_outputs * (1.0 - hidden_outputs)), np.transpose(inputs))
@@ -52,3 +56,61 @@ class neuralNetwork:
 
         return final_outputs
 
+    def draw(self, test_input_all_values):
+        image_array = np.asfarray(test_all_values[1:]).reshape(28, 28)
+        matplotlib.pyplot.imshow(image_array, cmap='Greys', interpolation='None')
+        matplotlib.pyplot.show()
+
+
+start = time.time()
+in_nodes = 784
+hidden_nodes = 500
+out_nodes = 10
+
+lr = 0.1
+
+n = neuralNetwork(in_nodes, hidden_nodes, out_nodes, lr)
+
+#train_data_file = open('/Users/rene.kwak/Private/studyData/mnist_train_100.csv', 'r')
+train_data_file = open('/Users/rene.kwak/Private/studyData/mnist_train.csv', 'r')
+train_data_list = train_data_file.readlines()
+train_data_file.close()
+
+epochs = 5
+for e in range(epochs):
+    for recode in train_data_list:
+        all_values = recode.split(',')
+        inputs = (np.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01
+        targets = np.zeros(out_nodes) + 0.01
+        targets[int(all_values[0])] = 0.99
+        n.train(inputs, targets)
+        pass
+    pass
+
+
+test_data_file = open('/Users/rene.kwak/Private/studyData/mnist_test.csv', 'r')
+test_data_list = test_data_file.readlines()
+test_data_file.close()
+
+scorecard = []
+for i in range(0, len(test_data_list)):
+    test_all_values = test_data_list[i].split(',')
+    #n.draw(test_all_values)
+    final_output = n.query((np.asfarray(test_all_values[1:]) / 255.0 * 0.99) + 0.01)
+    test_label = int(test_all_values[0])
+    neuralNetwork_answer = int(final_output.argmax())
+
+    if test_label == neuralNetwork_answer:
+        scorecard.append(1)
+    else:
+        #print("test data label :: {}".format(test_label))
+        #print("neuralNetwork answer :: {}".format(neuralNetwork_answer))
+        scorecard.append(0)
+
+scorecard_array = np.asarray(scorecard)
+print("incorrect count :: {}".format(scorecard_array.size - scorecard_array.sum()))
+print("correct ratio :: {}".format(scorecard_array.sum()/scorecard_array.size * 100))
+sec = time.time() - start
+process_time = str(datetime.timedelta(seconds=sec)).split('.')
+process_time = process_time[0]
+print(process_time)
