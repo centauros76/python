@@ -3,6 +3,7 @@ import scipy.special
 import matplotlib.pyplot
 import time
 import datetime
+import imageio
 
 
 class neuralNetwork:
@@ -57,17 +58,18 @@ class neuralNetwork:
         return final_outputs
 
     def draw(self, test_input_all_values):
-        image_array = np.asfarray(test_all_values[1:]).reshape(28, 28)
+        image_array = np.asfarray(test_input_all_values[1:]).reshape(28, 28)
         matplotlib.pyplot.imshow(image_array, cmap='Greys', interpolation='None')
         matplotlib.pyplot.show()
 
 
+# init
 start = time.time()
 in_nodes = 784
-hidden_nodes = 500
+hidden_nodes = 100
 out_nodes = 10
 
-lr = 0.1
+lr = 0.2
 
 n = neuralNetwork(in_nodes, hidden_nodes, out_nodes, lr)
 
@@ -76,7 +78,9 @@ train_data_file = open('/Users/rene.kwak/Private/studyData/mnist_train.csv', 'r'
 train_data_list = train_data_file.readlines()
 train_data_file.close()
 
-epochs = 5
+
+# train
+epochs = 2
 for e in range(epochs):
     for recode in train_data_list:
         all_values = recode.split(',')
@@ -87,13 +91,19 @@ for e in range(epochs):
         pass
     pass
 
+sec = time.time() - start
+train_time = str(datetime.timedelta(seconds=sec)).split('.')
+train_time = train_time[0]
+print("train time :: {}".format(train_time))
 
+# test
 test_data_file = open('/Users/rene.kwak/Private/studyData/mnist_test.csv', 'r')
 test_data_list = test_data_file.readlines()
 test_data_file.close()
 
 scorecard = []
 for i in range(0, len(test_data_list)):
+#for i in range(0, 1):
     test_all_values = test_data_list[i].split(',')
     #n.draw(test_all_values)
     final_output = n.query((np.asfarray(test_all_values[1:]) / 255.0 * 0.99) + 0.01)
@@ -111,6 +121,29 @@ scorecard_array = np.asarray(scorecard)
 print("incorrect count :: {}".format(scorecard_array.size - scorecard_array.sum()))
 print("correct ratio :: {}".format(scorecard_array.sum()/scorecard_array.size * 100))
 sec = time.time() - start
+process_time = str(datetime.timedelta(seconds=sec)).split('.')
+process_time = process_time[0]
+print(process_time)
+
+
+# get Test data
+img_array = imageio.imread('/Users/rene.kwak/Private/0_28by28.png', as_gray=True)
+
+
+img_data = 255.0 - img_array.reshape(784)
+
+image_array = np.asfarray(img_data).reshape(28, 28)
+matplotlib.pyplot.imshow(image_array, cmap='Greys', interpolation='None')
+matplotlib.pyplot.show()
+
+
+img_data = (img_data / 255.0 * 0.99) + 0.01
+
+final_output = n.query((np.asfarray(img_data)))
+print(final_output)
+neuralNetwork_answer = int(final_output.argmax())
+print("neuralNetwork answer :: {}".format(neuralNetwork_answer))
+
 process_time = str(datetime.timedelta(seconds=sec)).split('.')
 process_time = process_time[0]
 print(process_time)
